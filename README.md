@@ -1,66 +1,85 @@
-# VistaJet LMML watch
+# Malta Races
 
-Watches for VistaJet (ICAO callsign prefix `VJT`) flights departing Malta
-(LMML), using OpenSky Network's free ADS-B data. Runs on a schedule and
-prints newly-seen departures.
+A dashboard of upcoming swim, run, trail and bike races — focused on Malta, with a search you can point at any city and date range for when you're travelling.
 
-## What this can and can't actually tell you
+`races-auto.json` refreshes itself weekly via GitHub Actions, pulling from racescalendar.com's public calendar feed. No server to run yourself, no build step.
 
-- **Reliable:** "a VistaJet aircraft departed/is departing LMML, headed to
-  [X]." This comes straight from live transponder data.
-- **Not reliable:** whether a flight is genuinely empty. No public flight
-  data includes a passenger count - operators don't broadcast that.
-  VistaJet's own "Empty Legs" page doesn't list flights directly anymore
-  either; it now points to the XO app, which is a broader marketplace
-  (spans aircraft beyond just VistaJet's own fleet) with listings loaded
-  client-side and no public API - not something a scheduled script can
-  reliably read.
-- **What this script does instead:** flags departures with unusually short
-  ground time beforehand (`SHORT_GROUND_HOURS` in the script, default 3h)
-  as a rough "looks repositioned" signal. Treat this with real skepticism -
-  Malta is VistaJet's home base (Maltese AOC MT-17), so a short ground time
-  can just as easily be routine base activity as a genuine empty leg.
+## How it's put together
 
-If you want a *confirmed* empty leg to actually book, checking the XO app
-by hand is still the most reliable route - this script is best used as an
-early heads-up, not a booking tool.
+```
+index.html                       the dashboard — fetches both JSON files below and renders them
+races-curated.json               hand-checked entries (starts with the Malta Marathon). Never touched by automation.
+races-auto.json                  machine-refreshed entries. Overwritten by the workflow below — don't hand-edit.
+scripts/refresh_races.py         pulls racescalendar.com's ICS feed and rewrites races-auto.json
+.github/workflows/refresh-races.yml   runs the script every Monday, commits if anything changed
+test/                            a fixture feed + test suite for the script, no network needed
+```
 
-## Setup
+Cards from `races-curated.json` show a small **✓ Hand-checked** tag so you can tell the two sources apart at a glance.
 
-1. **Create a free OpenSky account** at opensky-network.org, then go to
-   Account -> API Client and generate a `client_id` / `client_secret`.
-   Anonymous access works too but has a much smaller daily credit budget,
-   worth avoiding since each check calls two endpoints.
+## One-time setup after you upload this
 
-2. **Add them as GitHub Actions secrets** in your repo: Settings ->
-   Secrets and variables -> Actions -> New repository secret -
-   `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET`.
+GitHub repos don't allow Actions to push commits by default — you have to turn it on once:
 
-3. **Add the files to your repo:**
-   - `vistajet_lmml_watch.py` and `requirements.txt` at the repo root
-   - `vistajet-watch.yml` -> move this into `.github/workflows/`
+1. **Settings → Actions → General → Workflow permissions** → select **"Read and write permissions"** → Save.
+2. **Settings → Pages** → Source: **Deploy from a branch**, branch **main**, folder **/ (root)** → Save. You'll get a `https://<you>.github.io/<repo>/` URL within a minute or two.
+3. **Actions tab → "Refresh races" → Run workflow.** Trigger it once by hand rather than waiting for Monday — this both proves the automation works end-to-end and replaces the seeded data (which I wrote by hand today) with a genuinely fresh pull.
 
-4. **Give the workflow write access:** Settings -> Actions -> General ->
-   Workflow permissions -> "Read and write permissions" (it needs this to
-   commit `seen_flights.json` back after each run, so it doesn't re-alert
-   you on the same flight next check).
+**Uploading without git**, if you're doing this from your phone: [github.com/new](https://github.com/new) → create the repo → "uploading an existing file" → drag in everything **except** the `.github` folder, since the web uploader doesn't handle folders starting with a dot well. For that one, either use the git CLI below, or on the repo page use "Add file → Create new file" and type the path `.github/workflows/refresh-races.yml` directly — GitHub will create the folders for you.
 
-5. **Test it manually first:** Actions tab -> "VistaJet LMML watch" -> Run
-   workflow, then check the log output before trusting the schedule.
+**With git, from a computer:**
 
-## One real risk worth knowing about
+```bash
+cd malta-race-finder
+git init && git add . && git commit -m "Malta race finder"
+git branch -M main
+git remote add origin https://github.com/<you>/malta-race-finder.git
+git push -u origin main
+```
 
-OpenSky's own docs note they may throttle or block requests from AWS and
-"other hyperscalers" due to abuse from those IP ranges. GitHub-hosted
-runners run on Azure, so there's a real chance requests get silently
-degraded over time. If runs start failing or consistently returning empty
-results, that's the likely cause. The fix is just to run the same script
-somewhere else - a Raspberry Pi or any always-on device with `cron` works
-identically, since the Python script itself doesn't change, only where it
-runs.
+## What the automation actually does — and its real limits
 
-## Notifications
+Every Monday at 06:00 UTC (and any time you hit "Run workflow"), the script fetches racescalendar.com's calendar export, keeps only future events, and rewrites `races-auto.json` from scratch. A few honest caveats:
 
-Right now this only prints to the Actions log. Wiring up an email or
-Telegram message when something new is found is a small addition on top
-of this - happy to add it if you want that next.
+- **It only knows racescalendar.com.** That's the one Malta race source I found with a feed built for exactly this kind of automated, repeat access — a calendar-subscription export, meant to be polled. The Malta Marathon and the Triathlon Federation's own sites don't offer anything like that (one blocks automated fetches outright), so those stay in the hand-checked file instead of getting picked up automatically.
+- **Fees are always "Check event site."** They're not in the feed at all, so the script never invents a number.
+- **Distance is a best-effort guess** — the script pattern-matches things like "5km" or "750m" out of the event description. When it can't find anything, it says so plainly rather than leaving a blank.
+- **Type (run/trail/swim/etc.) is inferred**, not certain — from the feed's category tags first, then from keywords in the event name. It's tested against known tricky cases (a "SwimRun" correctly lands on multisport rather than trail, for instance — see `test/`), but a genuinely unusual event name could still get filed oddly. Worth a skim after each refresh.
+- **It fails safely.** A broken fetch or a suspiciously small result (under 3 events) leaves the existing file alone and exits with an error rather than overwriting good data with bad — you'll see a red ✕ on that run in the Actions tab if that happens. GitHub emails the repo owner when a scheduled run fails, so you'll likely hear about it without needing to check manually. If you get that email, it usually means racescalendar.com changed its page structure — come back and I can take a look at updating `scripts/refresh_races.py`.
+
+None of this applies to `races-curated.json` — that file only ever changes when you or I edit it directly, so anything you want pinned with full confidence (verified fee, exact distance) belongs there.
+
+## Adding a race by hand
+
+Usually to `races-curated.json`, so it doesn't get touched by the next refresh:
+
+```json
+{
+  "id": "unique-slug-2027",
+  "name": "Race name",
+  "date": "2027-03-14",
+  "endDate": null,
+  "type": "run",
+  "distance": "10 km",
+  "city": "Mosta",
+  "country": "Malta",
+  "fee": "€20",
+  "website": "https://...",
+  "notes": "",
+  "source": "curated"
+}
+```
+
+`type` must be one of `run`, `trail`, `swim`, `bike`, `multisport`, `obstacle`. For a trip, just use a different `city`/`country` — the search box and date filter already work across everything in both files, not just Malta.
+
+## Checking the automation script without waiting a week
+
+```bash
+python3 test/test_refresh_races.py -v
+```
+
+Runs entirely against the sample feed in `test/sample_feed.ics` — no network call, nothing gets written outside a temp directory. Worth running after any edit to `scripts/refresh_races.py`, and a good first thing to check if a scheduled run starts failing.
+
+## Data provenance
+
+Malta Marathon fee and course detail came from maltamarathon.com directly. Everything currently in `races-auto.json` was seeded from a manual pull of racescalendar.com on 5 August 2026, in the same shape the script produces — it'll read as slightly more polished (fuller notes, cleaner distances) than what pure automation turns up, since I hand-wrote this first batch. That gap closes the first time the workflow runs for real.
