@@ -147,7 +147,7 @@
     text-transform:uppercase;
     color:var(--ink-400);
   }
-  input[type=text], input[type=date]{
+  input[type=text], input[type=date], select{
     font-family:var(--font-body);
     font-size:.92rem;
     padding:.5rem .6rem;
@@ -157,7 +157,15 @@
     color:var(--ink-900);
     width:100%;
   }
-  input[type=text]:focus-visible, input[type=date]:focus-visible, .pill:focus-visible, .reset-btn:focus-visible{
+  select{
+    appearance:none;
+    background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%23565f5c' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right .6rem center;
+    background-size:12px;
+    padding-right:2.2rem;
+  }
+  input[type=text]:focus-visible, input[type=date]:focus-visible, select:focus-visible, .pill:focus-visible, .reset-btn:focus-visible{
     outline:2px solid var(--navy-700);
     outline-offset:1px;
   }
@@ -312,8 +320,22 @@
     <div class="filters-row">
       <div class="field">
         <label for="searchInput">Search</label>
-        <input type="text" id="searchInput" placeholder="Race, town or country…">
+        <input type="text" id="searchInput" placeholder="Race name…">
       </div>
+      <div class="field">
+        <label for="countrySelect">Country</label>
+        <select id="countrySelect">
+          <option value="">All countries</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="citySelect">City</label>
+        <select id="citySelect">
+          <option value="">All cities</option>
+        </select>
+      </div>
+    </div>
+    <div class="filters-row">
       <div class="field">
         <label for="fromDate">From</label>
         <input type="date" id="fromDate">
@@ -362,6 +384,8 @@
     search: "",
     from: "",
     to: "",
+    country: "",
+    city: "",
     activeTypes: new Set(Object.keys(TYPE_META))
   };
 
@@ -416,6 +440,8 @@
     if (!state.activeTypes.has(race.type)) return false;
     if (state.from && race.date < state.from) return false;
     if (state.to && race.date > state.to) return false;
+    if (state.country && race.country !== state.country) return false;
+    if (state.city && race.city !== state.city) return false;
     if (state.search){
       const q = state.search.toLowerCase();
       const hay = [race.name, race.city, race.country, race.notes].join(" ").toLowerCase();
@@ -520,15 +546,55 @@
     list.innerHTML = html;
   }
 
+  function getCountries(){
+    const countries = new Set(RACES.map(r => r.country).filter(Boolean));
+    return Array.from(countries).sort();
+  }
+
+  function getCities(country){
+    const cities = new Set(RACES.filter(r => !country || r.country === country).map(r => r.city).filter(Boolean));
+    return Array.from(cities).sort();
+  }
+
+  function populateCountries(){
+    const select = document.getElementById("countrySelect");
+    const countries = getCountries();
+    select.innerHTML = '<option value="">All countries</option>';
+    countries.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      select.appendChild(opt);
+    });
+  }
+
+  function updateCities(){
+    const select = document.getElementById("citySelect");
+    const cities = getCities(state.country);
+    select.innerHTML = '<option value="">All cities</option>';
+    cities.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      select.appendChild(opt);
+    });
+    state.city = "";
+  }
+
   document.getElementById("searchInput").addEventListener("input", e => { state.search = e.target.value.trim(); render(); });
+  document.getElementById("countrySelect").addEventListener("change", e => { state.country = e.target.value; updateCities(); render(); });
+  document.getElementById("citySelect").addEventListener("change", e => { state.city = e.target.value; render(); });
   document.getElementById("fromDate").addEventListener("change", e => { state.from = e.target.value; render(); });
   document.getElementById("toDate").addEventListener("change", e => { state.to = e.target.value; render(); });
   document.getElementById("resetBtn").addEventListener("click", () => {
-    state.search = ""; state.from = ""; state.to = "";
+    state.search = ""; state.from = ""; state.to = ""; state.country = ""; state.city = "";
     state.activeTypes = new Set(Object.keys(TYPE_META));
     document.getElementById("searchInput").value = "";
+    document.getElementById("countrySelect").value = "";
+    document.getElementById("citySelect").value = "";
     document.getElementById("fromDate").value = "";
     document.getElementById("toDate").value = "";
+    updateCities();
     buildTypePills();
     render();
   });
@@ -596,6 +662,8 @@
     });
 
     status.textContent = statusParts.join(" ");
+    populateCountries();
+    updateCities();
     buildTypePills();
     render();
   }
