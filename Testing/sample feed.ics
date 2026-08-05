@@ -1,0 +1,71 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//The Events Calendar//NONSGML v1.0//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Races Calendar
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260823
+DTEND;VALUE=DATE:20260824
+DTSTAMP:20260801T120000Z
+UID:zabbar-5k-series-2026@racescalendar.com
+SUMMARY:Zabbar 5K Series
+DESCRIPTION:ZABBAR.RUN is one of Malta's most established and loved road-running events\, bringing together community spirit\, athletic excellence\, and the unique charm of the historic village of Żabbar. Built on the success of previous editions.
+URL:https://racescalendar.com/race/zabbar-5k-series/
+LOCATION:Zabbar\, Malta
+CATEGORIES:Road Running,Running
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20261010
+DTEND;VALUE=DATE:20261012
+DTSTAMP:20260801T120000Z
+UID:grid-sprint-weekend-2026@racescalendar.com
+SUMMARY:The Grid Sprint Weekend
+DESCRIPTION:Grid Sprint Weekend is your next challenge! On Saturday\, adults take on an adrenaline-packed 6km obstacle course race for all fitness levels\, pushing limits and conquering challenges. On Sunday\, the action continues with a kids race.
+URL:https://racescalendar.com/race/the-grid-sprint-weekend/
+LOCATION:Golden Bay\, Malta
+CATEGORIES:OCR
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260921
+DTSTAMP:20260801T120000Z
+UID:xterra-comino-swimrun-2026@racescalendar.com
+SUMMARY:XTERRA Comino SwimRun & Trail
+DESCRIPTION:XTERRA Comino SwimRun & Trail Run compliment the triathlon and trail running XTERRA events in Malta and Gozo. Since Malta and Gozo have already been covered\, the event will be held on Comino.
+URL:https://racescalendar.com/race/xterra-comino-swimrun-trail-3/
+LOCATION:Comino\, Malta
+CATEGORIES:Running,Swimming,Trail Running
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20260908T070000Z
+DTEND:20260908T130000Z
+DTSTAMP:20260801T120000Z
+UID:triathlon-series-race4-2026@racescalendar.com
+SUMMARY:Triathlon Series - Race 4
+DESCRIPTION:Malta Triathlon Federation National series race 4\, organised by Agones Sfc.
+URL:https://racescalendar.com/race/triathlon-series-race-4/
+LOCATION:Malta
+CATEGORIES:Triathlons
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20270620
+DTSTAMP:20260801T120000Z
+UID:relay-tri-2027@racescalendar.com
+SUMMARY:Relay Tri 2027
+DESCRIPTION:FOUR ATHLETES - ONE TEAM. THE SWIM: Swim 750m from Salina Beach around two buoys and back. THE BIKE: Ride your shining bike for three loops\, that's 20km.
+URL:https://racescalendar.com/race/relay-tri-2027/
+LOCATION:Bahar ic-Caghaq\, Malta
+CATEGORIES:Cycling,Road Cycling,Road Running,Running,Swimming,Triathlons
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20250815
+DTEND;VALUE=DATE:20250816
+DTSTAMP:20250801T120000Z
+UID:past-event-should-be-dropped@racescalendar.com
+SUMMARY:Past Event That Should Be Filtered Out
+DESCRIPTION:This already happened and must not appear in output.
+URL:https://racescalendar.com/race/past-event/
+LOCATION:Mosta\, Malta
+CATEGORIES:Running
+END:VEVENT
+END:VCALENDAR
