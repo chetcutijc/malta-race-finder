@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Malta Races — race finder</title>
+<meta name="description" content="Upcoming swim, run, trail and bike races in Malta, with a travel search for races elsewhere.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0f1626;
+    --navy-700:#182543;
+    --gold-500:#d9a441;
+    --gold-300:#e8c179;
+    --surface-50:#eef0ea;
+    --surface-0:#ffffff;
+    --line-200:#dde1d6;
+    --line-300:#cbd0c3;
+    --ink-900:#161c27;
+    --ink-600:#565f5c;
+    --ink-400:#848c85;
+
+    --c-run:#c1502e;
+    --c-trail:#4b6b3a;
+    --c-swim:#157089;
+    --c-bike:#b8892f;
+    --c-multi:#6b4e8e;
+    --c-ocr:#7a5230;
+
+    --radius:10px;
+    --font-display:'Oswald', 'Arial Narrow', sans-serif;
+    --font-body:'IBM Plex Sans', 'Segoe UI', sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--surface-50);
+    color:var(--ink-900);
+    font-family:var(--font-body);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 1.15rem;}
+
+  /* ---------- header ---------- */
+  header.hero{
+    background:
+      radial-gradient(ellipse 70% 60% at 12% 130%, #4a3a1c 0%, transparent 55%),
+      var(--navy-900);
+    border-bottom:3px solid var(--gold-500);
+    padding:2.6rem 0 2rem;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:.72rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold-300);
+    margin:0 0 .55rem;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    font-size:clamp(2.1rem, 8vw, 2.9rem);
+    color:#f5f1e6;
+    margin:0 0 .5rem;
+    line-height:1.02;
+  }
+  .hero p{
+    color:#c7cedd;
+    margin:0;
+    font-size:.98rem;
+    max-width:46ch;
+  }
+
+  /* ---------- next up ---------- */
+  .next-up{
+    margin-top:-1.6rem;
+    position:relative;
+    z-index:2;
+  }
+  .next-up-card{
+    background:var(--surface-0);
+    border:1px solid var(--line-200);
+    border-left:5px solid var(--gold-500);
+    border-radius:var(--radius);
+    padding:1.15rem 1.25rem;
+    box-shadow:0 10px 24px -14px rgba(15,22,38,.35);
+  }
+  .next-up-label{
+    font-family:var(--font-mono);
+    font-size:.68rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-400);
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    margin-bottom:.5rem;
+  }
+  .countdown{
+    font-family:var(--font-mono);
+    background:var(--navy-900);
+    color:var(--gold-300);
+    padding:.1rem .45rem;
+    border-radius:5px;
+    font-size:.72rem;
+  }
+  .next-up-name{
+    font-family:var(--font-display);
+    font-size:1.35rem;
+    font-weight:600;
+    margin:0 0 .3rem;
+    letter-spacing:.01em;
+  }
+  .next-up-meta{
+    font-size:.88rem;
+    color:var(--ink-600);
+    margin:0 0 .8rem;
+  }
+  .next-up-meta strong{color:var(--ink-900);}
+
+  /* ---------- filters ---------- */
+  .filters{
+    margin-top:1.6rem;
+    background:var(--surface-0);
+    border:1px solid var(--line-200);
+    border-radius:var(--radius);
+    padding:1rem 1.1rem 1.1rem;
+  }
+  .filters-row{display:flex; gap:.6rem; flex-wrap:wrap;}
+  .field{display:flex; flex-direction:column; gap:.3rem; flex:1 1 180px;}
+  .field label{
+    font-family:var(--font-mono);
+    font-size:.68rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-400);
+  }
+  input[type=text], input[type=date]{
+    font-family:var(--font-body);
+    font-size:.92rem;
+    padding:.5rem .6rem;
+    border:1px solid var(--line-300);
+    border-radius:7px;
+    background:var(--surface-50);
+    color:var(--ink-900);
+    width:100%;
+  }
+  input[type=text]:focus-visible, input[type=date]:focus-visible, .pill:focus-visible, .reset-btn:focus-visible{
+    outline:2px solid var(--navy-700);
+    outline-offset:1px;
+  }
+  .type-pills{display:flex; flex-wrap:wrap; gap:.45rem; margin-top:.85rem;}
+  .pill{
+    border:1.5px solid var(--pill-color, var(--line-300));
+    background:var(--surface-0);
+    color:var(--pill-color, var(--ink-600));
+    padding:.32rem .7rem;
+    border-radius:999px;
+    font-size:.78rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background-color .12s ease, color .12s ease;
+  }
+  .pill[aria-pressed="true"]{
+    background:var(--pill-color, var(--ink-600));
+    color:#fff;
+  }
+  .filters-foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:.9rem;
+    font-size:.8rem;
+    color:var(--ink-400);
+  }
+  .reset-btn{
+    background:none;
+    border:none;
+    color:var(--navy-700);
+    text-decoration:underline;
+    cursor:pointer;
+    font-size:.8rem;
+    padding:0;
+  }
+
+  /* ---------- list ---------- */
+  .race-list{margin-top:1.8rem; padding-bottom:3rem;}
+  .month-heading{
+    font-family:var(--font-display);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-size:.95rem;
+    color:var(--ink-600);
+    border-bottom:2px solid var(--line-200);
+    padding-bottom:.4rem;
+    margin:2rem 0 .9rem;
+  }
+  .month-heading:first-child{margin-top:0;}
+  .race-card{
+    background:var(--surface-0);
+    border:1px solid var(--line-200);
+    border-left:5px solid var(--card-color, var(--line-300));
+    border-radius:var(--radius);
+    padding:.95rem 1.1rem;
+    margin-bottom:.7rem;
+    display:flex;
+    gap:1rem;
+    align-items:flex-start;
+  }
+  .race-date{
+    font-family:var(--font-mono);
+    text-align:center;
+    flex:0 0 46px;
+    padding-top:.1rem;
+  }
+  .race-date .dow{display:block; font-size:.62rem; letter-spacing:.06em; color:var(--ink-400); text-transform:uppercase;}
+  .race-date .dom{display:block; font-size:1.35rem; font-weight:600; line-height:1.05; color:var(--ink-900);}
+  .race-date .mon{display:block; font-size:.68rem; color:var(--ink-600); text-transform:uppercase;}
+  .race-body{flex:1; min-width:0;}
+  .race-top{display:flex; justify-content:space-between; align-items:flex-start; gap:.6rem; flex-wrap:wrap;}
+  .race-name{font-weight:600; font-size:1rem; margin:0;}
+  .type-tag{
+    font-family:var(--font-mono);
+    font-size:.62rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#fff;
+    background:var(--card-color, var(--ink-600));
+    padding:.18rem .5rem;
+    border-radius:5px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .verified-tag{
+    font-family:var(--font-mono);
+    font-size:.68rem;
+    letter-spacing:.04em;
+    color:var(--c-swim);
+    margin:.4rem 0 0;
+    font-weight:600;
+  }
+  .race-detail{font-size:.85rem; color:var(--ink-600); margin:.35rem 0 0;}
+  .race-detail + .race-detail{margin-top:.15rem;}
+  .race-detail .k{color:var(--ink-400);}
+  .race-note{font-size:.8rem; color:var(--ink-400); margin:.35rem 0 0; font-style:italic;}
+  .race-link{
+    display:inline-flex;
+    align-items:center;
+    gap:.3rem;
+    margin-top:.65rem;
+    font-size:.82rem;
+    font-weight:600;
+    color:var(--navy-700);
+    text-decoration:none;
+    border-bottom:1.5px solid var(--gold-500);
+    padding-bottom:1px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:2.4rem 1rem;
+    color:var(--ink-600);
+  }
+  .empty-state p{margin:.3rem 0;}
+
+  .results-count{font-size:.82rem; color:var(--ink-400); margin:1.1rem 0 0;}
+
+  footer{
+    border-top:1px solid var(--line-200);
+    padding:1.5rem 0 3rem;
+    font-size:.78rem;
+    color:var(--ink-400);
+  }
+  footer a{color:var(--ink-600);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+
+  @media (max-width:480px){
+    .filters-row{flex-direction:column;}
+    .field{flex:1 1 auto;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Personal race tracker · Malta</p>
+    <h1>Malta Races</h1>
+    <p>Swim, run, trail and bike races around Malta — dates, distances, fees and entry links in one place. Use the filters below to check races elsewhere when you're travelling.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="next-up" id="nextUpSection"></section>
+
+  <section class="filters">
+    <div class="filters-row">
+      <div class="field">
+        <label for="searchInput">Search</label>
+        <input type="text" id="searchInput" placeholder="Race, town or country…">
+      </div>
+      <div class="field">
+        <label for="fromDate">From</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="field">
+        <label for="toDate">To</label>
+        <input type="date" id="toDate">
+      </div>
+    </div>
+    <div class="type-pills" id="typePills"></div>
+    <div class="filters-foot">
+      <span id="resultsCount"></span>
+      <button class="reset-btn" id="resetBtn" type="button">Reset filters</button>
+    </div>
+  </section>
+
+  <section class="race-list" id="raceList"></section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p id="dataStatus">Loading race data…</p>
+    <p>Races marked <strong>✓ hand-checked</strong> come from <code>races-curated.json</code> and won't change until someone edits them. Everything else comes from <code>races-auto.json</code>, refreshed automatically — see README.md for how both work, and for how to add a race by hand.</p>
+    <p>Always confirm dates, distances and fees on the event's own site before entering — small local races sometimes shift at short notice.</p>
+  </div>
+</footer>
+
+<script>
+  // ============================================================
+  // Race data is loaded at runtime from races-curated.json (hand-checked,
+  // never touched by automation) and races-auto.json (refreshed weekly by
+  // .github/workflows/refresh-races.yml). See README.md to add races by
+  // hand, or to understand how the automated file gets rebuilt.
+  let RACES = [];
+
+  const TYPE_META = {
+    run:        { label: "Run",        color: "var(--c-run)"   },
+    trail:      { label: "Trail",      color: "var(--c-trail)" },
+    swim:       { label: "Swim",       color: "var(--c-swim)"  },
+    bike:       { label: "Bike",       color: "var(--c-bike)"  },
+    multisport: { label: "Multisport", color: "var(--c-multi)" },
+    obstacle:   { label: "Obstacle",   color: "var(--c-ocr)"   }
+  };
+
+  const state = {
+    search: "",
+    from: "",
+    to: "",
+    activeTypes: new Set(Object.keys(TYPE_META))
+  };
+
+  function parseLocalDate(str){
+    const [y, m, d] = str.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function today(){
+    const t = new Date();
+    t.setHours(0,0,0,0);
+    return t;
+  }
+
+  function daysUntil(dateStr){
+    const diff = parseLocalDate(dateStr) - today();
+    return Math.round(diff / 86400000);
+  }
+
+  function formatCountdown(n){
+    if (n === 0) return "today";
+    if (n === 1) return "tomorrow";
+    if (n > 1) return "in " + n + " days";
+    return "past";
+  }
+
+  function buildTypePills(){
+    const wrap = document.getElementById("typePills");
+    wrap.innerHTML = "";
+    Object.entries(TYPE_META).forEach(([key, meta]) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "pill";
+      btn.style.setProperty("--pill-color", meta.color);
+      btn.textContent = meta.label;
+      btn.setAttribute("aria-pressed", "true");
+      btn.addEventListener("click", () => {
+        if (state.activeTypes.has(key)) {
+          state.activeTypes.delete(key);
+          btn.setAttribute("aria-pressed", "false");
+        } else {
+          state.activeTypes.add(key);
+          btn.setAttribute("aria-pressed", "true");
+        }
+        render();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function matchesFilters(race){
+    if (!state.activeTypes.has(race.type)) return false;
+    if (state.from && race.date < state.from) return false;
+    if (state.to && race.date > state.to) return false;
+    if (state.search){
+      const q = state.search.toLowerCase();
+      const hay = [race.name, race.city, race.country, race.notes].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  }
+
+  function renderNextUp(){
+    const section = document.getElementById("nextUpSection");
+    const upcoming = RACES.filter(r => r.date >= todayStr()).sort((a,b) => a.date.localeCompare(b.date));
+    if (upcoming.length === 0){
+      section.innerHTML = "";
+      return;
+    }
+    const r = upcoming[0];
+    const meta = TYPE_META[r.type];
+    section.innerHTML = `
+      <div class="next-up-card" style="--card-color:${meta.color}">
+        <p class="next-up-label">Next up <span class="countdown">${formatCountdown(daysUntil(r.date))}</span></p>
+        <p class="next-up-name">${r.name}</p>
+        <p class="next-up-meta"><strong>${formatDateLong(r.date)}</strong> · ${meta.label} · ${r.city}</p>
+        <a class="race-link" href="${r.website}" target="_blank" rel="noopener">Event site →</a>
+      </div>
+    `;
+  }
+
+  function todayStr(){
+    const t = today();
+    const mm = String(t.getMonth()+1).padStart(2,"0");
+    const dd = String(t.getDate()).padStart(2,"0");
+    return t.getFullYear() + "-" + mm + "-" + dd;
+  }
+
+  function formatDateLong(dateStr){
+    return parseLocalDate(dateStr).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function monthLabel(dateStr){
+    return parseLocalDate(dateStr).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  }
+
+  function raceCardHTML(r){
+    const meta = TYPE_META[r.type];
+    const d = parseLocalDate(r.date);
+    const dow = d.toLocaleDateString("en-GB", { weekday: "short" });
+    const dom = d.getDate();
+    const mon = d.toLocaleDateString("en-GB", { month: "short" });
+    return `
+      <article class="race-card" style="--card-color:${meta.color}">
+        <div class="race-date">
+          <span class="dow">${dow}</span>
+          <span class="dom">${dom}</span>
+          <span class="mon">${mon}</span>
+        </div>
+        <div class="race-body">
+          <div class="race-top">
+            <p class="race-name">${r.name}</p>
+            <span class="type-tag" style="--card-color:${meta.color}">${meta.label}</span>
+          </div>
+          ${r.source === "curated" ? `<p class="verified-tag">✓ Hand-checked</p>` : ""}
+          <p class="race-detail"><span class="k">Distance —</span> ${r.distance}</p>
+          <p class="race-detail"><span class="k">Where —</span> ${r.city}, ${r.country}</p>
+          <p class="race-detail"><span class="k">Fee —</span> ${r.fee}</p>
+          ${r.notes ? `<p class="race-note">${r.notes}</p>` : ""}
+          <a class="race-link" href="${r.website}" target="_blank" rel="noopener">Event site →</a>
+        </div>
+      </article>
+    `;
+  }
+
+  function render(){
+    renderNextUp();
+
+    const filtered = RACES
+      .filter(matchesFilters)
+      .sort((a,b) => a.date.localeCompare(b.date));
+
+    const list = document.getElementById("raceList");
+    document.getElementById("resultsCount").textContent = filtered.length + " of " + RACES.length + " races";
+
+    if (filtered.length === 0){
+      list.innerHTML = `
+        <div class="empty-state">
+          <p><strong>No races match your filters.</strong></p>
+          <p>Try widening the date range, clearing the search, or turning more types back on.</p>
+        </div>
+      `;
+      return;
+    }
+
+    let html = "";
+    let currentMonth = "";
+    filtered.forEach(r => {
+      const label = monthLabel(r.date);
+      if (label !== currentMonth){
+        html += `<h2 class="month-heading">${label}</h2>`;
+        currentMonth = label;
+      }
+      html += raceCardHTML(r);
+    });
+    list.innerHTML = html;
+  }
+
+  document.getElementById("searchInput").addEventListener("input", e => { state.search = e.target.value.trim(); render(); });
+  document.getElementById("fromDate").addEventListener("change", e => { state.from = e.target.value; render(); });
+  document.getElementById("toDate").addEventListener("change", e => { state.to = e.target.value; render(); });
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    state.search = ""; state.from = ""; state.to = "";
+    state.activeTypes = new Set(Object.keys(TYPE_META));
+    document.getElementById("searchInput").value = "";
+    document.getElementById("fromDate").value = "";
+    document.getElementById("toDate").value = "";
+    buildTypePills();
+    render();
+  });
+
+  async function loadJSON(path){
+    const res = await fetch(path, { cache: "no-store" });
+    if (!res.ok) throw new Error(path + " responded with " + res.status);
+    return res.json();
+  }
+
+  function formatRefreshed(iso){
+    if (!iso) return "unknown";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) +
+        " at " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    } catch (e) {
+      return iso;
+    }
+  }
+
+  async function loadData(){
+    const status = document.getElementById("dataStatus");
+    const results = await Promise.allSettled([
+      loadJSON("races-curated.json"),
+      loadJSON("races-auto.json")
+    ]);
+
+    const [curatedResult, autoResult] = results;
+    let races = [];
+    let statusParts = [];
+
+    if (curatedResult.status === "fulfilled"){
+      races = races.concat(curatedResult.value.races || []);
+    } else {
+      console.warn("Could not load races-curated.json:", curatedResult.reason);
+    }
+
+    if (autoResult.status === "fulfilled"){
+      const autoData = autoResult.value;
+      races = races.concat(autoData.races || []);
+      statusParts.push("Auto list last refreshed " + formatRefreshed(autoData.generatedAt) + ".");
+    } else {
+      console.warn("Could not load races-auto.json:", autoResult.reason);
+      statusParts.push("Couldn't load the auto-refreshed list just now.");
+    }
+
+    if (curatedResult.status === "rejected" && autoResult.status === "rejected"){
+      status.innerHTML = "Couldn't load race data. If you're viewing this file directly from disk, that's expected — " +
+        "browsers block local file requests. View it via the hosted GitHub Pages link instead, or run a local server " +
+        "(<code>python3 -m http.server</code>) from this folder.";
+      return;
+    }
+
+    // Safety net: if the same race ends up in both files, keep the curated
+    // copy (it's concatenated first above, so it wins ties here). Keyed on
+    // name+date rather than website, since series races often share one
+    // registration link across several dates.
+    const seen = new Set();
+    RACES = races.filter(r => {
+      const key = r.name.trim().toLowerCase() + "|" + r.date;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    status.textContent = statusParts.join(" ");
+    buildTypePills();
+    render();
+  }
+
+  loadData();
+</script>
+</body>
+</html>

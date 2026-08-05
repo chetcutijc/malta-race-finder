@@ -1,0 +1,19 @@
+{
+  "_comment": "Hand-checked entries only. The refresh workflow never writes to this file — add anything here yourself (or ask Claude) when you want a race pinned with verified detail instead of whatever the automated feed can figure out.",
+  "races": [
+    {
+      "id": "malta-marathon-2027",
+      "name": "LifeStar Malta Marathon (+ Half, 5K, Kids)",
+      "date": "2027-02-28",
+      "endDate": null,
+      "type": "run",
+      "distance": "Marathon 42.195 km · Half 21.0975 km · 5 km · Kids 1.5 km",
+      "city": "Mdina \u2192 Sliema",
+      "country": "Malta",
+      "fee": "\u20ac55 until 30 Nov 2026 \u00b7 \u20ac60 until 15 Jan 2027 \u00b7 \u20ac70 after (Marathon/Half \u2014 5K & kids race usually cheaper, check site)",
+      "website": "https://maltamarathon.com",
+      "notes": "Established 1986. World Athletics/AIMS-certified, downhill point-to-point course, Boston/Berlin-qualifying times accepted. Not on the racescalendar.com feed, which is why this one is hand-maintained rather than automated.",
+      "source": "curated"
+    }
+  ]
+}
