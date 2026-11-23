@@ -654,7 +654,10 @@
     // name+date rather than website, since series races often share one
     // registration link across several dates.
     const seen = new Set();
+    const todayISO = todayStr();
     RACES = races.filter(r => {
+      // Hide finished races. Multi-day events stay visible until their last day.
+      if ((r.endDate || r.date) < todayISO) return false;
       const key = r.name.trim().toLowerCase() + "|" + r.date;
       if (seen.has(key)) return false;
       seen.add(key);
